@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
+@theme {
+  --color-navy: #101B35;
+  --color-navy-dark: #0A1122;
+  --color-navy-light: #1A2A4E;
+  --color-blue: #1677B8;
+  --color-blue-light: #258ECF;
+  --color-blue-dark: #10598A;
+  --color-gold: #D99A35;
+  --color-gold-light: #F3B95F;
+  --color-gold-dark: #B67C21;
+  --color-ivory: #F8F5EF;
+  --color-ivory-dark: #EFE9DC;
+  --color-sand: #EDE6D8;
+  
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+  --font-serif: var(--font-cinzel), Georgia, serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F8F5EF;
+  --foreground: #101B35;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F8F5EF;
+}
+::-webkit-scrollbar-thumb {
+  background: #D99A35;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B67C21;
+}
+
+/* Luxury Gold Text Gradient */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #D99A35 0%, #F3B95F 50%, #B67C21 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle Royal Egyptian Pattern Overlay */
+.egyptian-pattern-bg {
+  background-color: #101B35;
+  background-image: radial-gradient(rgba(217, 154, 53, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.ivory-pattern-bg {
+  background-color: #F8F5EF;
+  background-image: radial-gradient(rgba(16, 27, 53, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
