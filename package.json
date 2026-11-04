@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:ai": "npx tsx scripts/test-phase2-3.ts"
+    "test:ai": "npx tsx scripts/test-phase2-3.ts",
+    "test:ai:phases": "npx tsx scripts/test-phase4-5.ts",
+    "test:ai:all": "npx tsx scripts/test-phase2-3.ts ; npx tsx scripts/test-phase4-5.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.2",

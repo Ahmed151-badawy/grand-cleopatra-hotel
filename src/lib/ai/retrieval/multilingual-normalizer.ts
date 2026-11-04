@@ -38,34 +38,39 @@ export function detectLanguage(input: string): LanguageCode {
   if (!input || !input.trim()) return "en";
 
   // Check for Arabic characters (Unicode block 0600 - 06FF)
-  const arabicRegex = /[\u0600-\u06FF]/;
-  if (arabicRegex.test(input)) {
+  if (/[\u0600-\u06FF]/.test(input)) {
     return "ar";
   }
 
   const lower = input.toLowerCase();
 
-  // German indicators
-  if (
-    /\b(hotel|zimmer|frühstück|wie|wann|wo|haben|sie|buchung|rezeption|stornierung|flughafen|kostet)\b/i.test(lower) ||
-    /[äöüß]/.test(lower)
-  ) {
+  // Distinctive German indicators (excluding international words like 'hotel')
+  const deHits = (
+    lower.match(/\b(zimmer|frühstück|wie|wann|wo|haben|sie|buchung|rezeption|stornierung|flughafen|kostet|ist|das|der|die|ein|eine|bitte|danke|auf|mit|nach)\b/g) || []
+  ).length + (lower.match(/[äöüß]/g) || []).length * 2;
+
+  // Distinctive French indicators
+  const frHits = (
+    lower.match(/\b(bonjour|chambre|petit-déjeuner|comment|combien|annuler|arrivée|départ|piscine|repas|merci|est-ce|vous|pour|avec|dans|sur|votre)\b/g) || []
+  ).length + (lower.match(/[éèêëàâçîïôùû]/g) || []).length * 2;
+
+  // Distinctive Spanish indicators
+  const esHits = (
+    lower.match(/\b(hola|habitación|desayuno|cómo|cuánto|llegar|cancelar|piscina|aeropuerto|reserva|gracias|por favor|dónde|está|para|con|sobre)\b/g) || []
+  ).length + (lower.match(/[áéíóúñ¿¡]/g) || []).length * 2;
+
+  // Distinctive English indicators
+  const enHits = (
+    lower.match(/\b(where|what|how|when|why|which|is|are|the|and|with|from|have|does|can|will|our|your|about|there|close)\b/g) || []
+  ).length;
+
+  if (deHits > enHits && deHits >= frHits && deHits >= esHits) {
     return "de";
   }
-
-  // French indicators
-  if (
-    /\b(bonjour|chambre|hôtel|petit-déjeuner|comment|combien|annuler|arrivée|départ|piscine|repas)\b/i.test(lower) ||
-    /[éèêëàâçîïôùû]/.test(lower)
-  ) {
+  if (frHits > enHits && frHits >= deHits && frHits >= esHits) {
     return "fr";
   }
-
-  // Spanish indicators
-  if (
-    /\b(hola|habitación|hotel|desayuno|cómo|cuánto|llegar|cancelar|piscina|aeropuerto|reserva)\b/i.test(lower) ||
-    /[áéíóúñ¿¡]/.test(lower)
-  ) {
+  if (esHits > enHits && esHits >= deHits && esHits >= frHits) {
     return "es";
   }
 

@@ -32,8 +32,15 @@ export class FallbackProvider implements AIProvider {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content || "";
     const lang = detectLanguage(lastUserMessage);
 
-    // Retrieve knowledge directly for the last user message
-    const retrieved = await defaultKnowledgeRetriever.search(lastUserMessage, {
+    // Combine user turns for multi-turn conversational context in fallback
+    const allUserMessages = messages
+      .filter((m) => m.role === "user")
+      .map((m) => m.content)
+      .join(" ");
+    const searchQuery = allUserMessages.trim() || lastUserMessage;
+
+    // Retrieve knowledge directly for the user context
+    const retrieved = await defaultKnowledgeRetriever.search(searchQuery, {
       maxResults: 2,
       threshold: 0.28,
     });
