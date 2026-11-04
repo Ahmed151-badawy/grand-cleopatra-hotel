@@ -34,3 +34,4 @@ export default function TypingIndicator({ language = "en" }: TypingIndicatorProp
     </div>
   );
 }
+

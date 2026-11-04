@@ -175,3 +175,4 @@ export default function AIMessage({ message, language }: AIMessageProps) {
     </div>
   );
 }
+

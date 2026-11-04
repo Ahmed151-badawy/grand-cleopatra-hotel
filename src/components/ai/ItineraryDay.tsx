@@ -243,3 +243,4 @@ export default function ItineraryDay({ day, language }: ItineraryDayProps) {
     </div>
   );
 }
+

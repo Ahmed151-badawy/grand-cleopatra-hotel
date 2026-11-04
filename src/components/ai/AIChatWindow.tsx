@@ -379,3 +379,4 @@ export default function AIChatWindow({
     </div>
   );
 }
+
