@@ -104,3 +104,4 @@ flowchart TD
   During `OPEN` state, all requests bypass the dead socket and route immediately to the `FallbackProvider`, responding in `< 5ms`.
 - **Automatic Self-Healing**:
   Once the cooldown period elapses, the circuit enters `HALF_OPEN` to test daemon recovery. When Ollama recovers, full generative capabilities resume automatically without server restart.
+

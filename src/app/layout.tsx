@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingBookBar from "@/components/layout/FloatingBookBar";
+import AIChatWidget from "@/components/ai/AIChatWidget";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function RootLayout({
         <main className="flex-grow">{children}</main>
         <Footer />
         <FloatingBookBar />
+        <AIChatWidget />
       </body>
     </html>
   );

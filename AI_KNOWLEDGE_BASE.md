@@ -110,3 +110,4 @@ When modifying base room rates in `hotel-knowledge.json`:
 - Ensure `ownerConfirmationRequired` is set to `true` if management approval is needed for the requested service.
 - Add relevant keywords in English, Arabic, German, French, and Spanish to ensure high multilingual retrieval scores.
 - Never add unverifiable claims (e.g. "beach access", "heated pool", "free international flights").
+

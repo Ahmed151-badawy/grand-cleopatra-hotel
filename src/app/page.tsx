@@ -4,6 +4,7 @@ import FeaturedRooms from "@/components/home/FeaturedRooms";
 import FacilitiesHighlight from "@/components/home/FacilitiesHighlight";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import Testimonials from "@/components/home/Testimonials";
+import AIPlannerBanner from "@/components/home/AIPlannerBanner";
 import LocationPreview from "@/components/home/LocationPreview";
 import CtaBanner from "@/components/home/CtaBanner";
 
@@ -15,6 +16,7 @@ export default function HomePage() {
       <FeaturedRooms />
       <FacilitiesHighlight />
       <GalleryPreview />
+      <AIPlannerBanner />
       <Testimonials />
       <LocationPreview />
       <CtaBanner />

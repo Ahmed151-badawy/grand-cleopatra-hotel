@@ -253,3 +253,4 @@ All errors conform to a normalized JSON envelope:
 | `400 Bad Request` | `EMPTY_MESSAGE` | Message contains only whitespace or stripped HTML tags. |
 | `429 Too Many Requests` | `AI_RATE_LIMIT` | Request quota exceeded (Retry-After header returned). |
 | `500 Server Error` | `INTERNAL_AI_ERROR` | Unexpected runtime error. |
+

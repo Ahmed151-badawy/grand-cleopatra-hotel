@@ -90,3 +90,4 @@ npm run test:ai:all
    The built-in sliding window rate limiter and conversation memory use fast in-memory stores. For distributed multi-instance deployments (e.g. Kubernetes, serverless edge functions), plug a Redis store into `setRateLimiterStore(redisStore)`.
 3. **No Client Bundling**:
    All AI configuration is strictly isolated on the server. No `NEXT_PUBLIC_` variables are used for AI provider internals.
+

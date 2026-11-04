@@ -16,6 +16,7 @@ const navLinks = [
   { name: "Facilities", href: "/facilities" },
   { name: "Gallery", href: "/gallery" },
   { name: "Location", href: "/location" },
+  { name: "AI Planner", href: "/planner" },
   { name: "Contact", href: "/contact" },
 ];
 
