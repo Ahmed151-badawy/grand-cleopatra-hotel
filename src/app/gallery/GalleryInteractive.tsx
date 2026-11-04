@@ -211,3 +211,4 @@ export default function GalleryInteractive({ items }: GalleryInteractiveProps) {
     </div>
   );
 }
+

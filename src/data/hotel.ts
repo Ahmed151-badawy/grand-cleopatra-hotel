@@ -215,3 +215,4 @@ export const faqs: FAQ[] = [
       "We accept major credit cards (Visa, MasterCard), cash in Egyptian Pounds (EGP), US Dollars (USD), and Euros (EUR). We also support direct reservations via our website and Booking.com.",
   },
 ];
+

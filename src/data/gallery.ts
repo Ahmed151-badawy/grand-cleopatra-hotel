@@ -105,3 +105,4 @@ export const galleryItems: GalleryItem[] = [
     description: "Enjoy flavorful Egyptian dinners and friendly hospitality under the starry desert sky.",
   },
 ];
+

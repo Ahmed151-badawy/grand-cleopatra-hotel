@@ -13,7 +13,7 @@
   --color-ivory: #F8F5EF;
   --color-ivory-dark: #EFE9DC;
   --color-sand: #EDE6D8;
-  
+
   --font-sans: var(--font-montserrat), system-ui, sans-serif;
   --font-serif: var(--font-cinzel), Georgia, serif;
 }
@@ -38,13 +38,16 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #F8F5EF;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #D99A35;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #B67C21;
 }

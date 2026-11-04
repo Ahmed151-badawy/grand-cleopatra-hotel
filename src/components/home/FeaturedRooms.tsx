@@ -133,3 +133,4 @@ export default function FeaturedRooms() {
     </section>
   );
 }
+

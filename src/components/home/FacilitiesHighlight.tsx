@@ -132,3 +132,4 @@ export default function FacilitiesHighlight() {
     </section>
   );
 }
+

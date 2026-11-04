@@ -194,3 +194,4 @@ export const rooms: Room[] = [
 export function getRoomBySlug(slug: string): Room | undefined {
   return rooms.find((room) => room.slug === slug);
 }
+

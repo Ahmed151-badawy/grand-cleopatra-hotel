@@ -171,3 +171,4 @@ export const facilities: Facility[] = [
     highlight: "24/7 Dedicated Care",
   },
 ];
+
