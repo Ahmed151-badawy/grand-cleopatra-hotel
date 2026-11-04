@@ -1,4 +1,4 @@
-import { KnowledgeRecord, AttractionRecord, RetrievalResult, VerificationStatus } from "../types";
+import { KnowledgeRecord, AttractionRecord, RetrievalResult, VerificationStatus, isKnowledgeRecord } from "../types";
 import { tokenizeAndNormalize, detectLanguage } from "./multilingual-normalizer";
 import { OllamaMultilingualEmbeddingAdapter } from "../embeddings/embeddings";
 import hotelKnowledgeData from "@/data/ai/hotel-knowledge.json";
@@ -9,6 +9,16 @@ export interface SearchOptions {
   threshold?: number;
   category?: "hotel" | "attractions" | "all";
 }
+
+const STOP_WORDS = new Set([
+  "a", "an", "the", "and", "or", "in", "into", "on", "at", "to", "for", "of", "with",
+  "is", "are", "was", "were", "do", "does", "did", "can", "could", "would", "should",
+  "i", "you", "your", "my", "we", "our", "it", "its", "what", "where", "how", "when",
+  "من", "في", "على", "الى", "إلى", "عن", "مع", "هل", "ما", "ماذا", "اين", "أين", "كيف", "هو", "هي",
+  "der", "die", "das", "und", "in", "im", "ist", "sind", "sie", "wie", "wo", "ich",
+  "le", "la", "les", "un", "une", "des", "et", "en", "dans", "est", "sont", "je",
+  "el", "la", "los", "las", "un", "una", "y", "en", "es", "son", "de", "yo"
+]);
 
 export class KnowledgeRetriever {
   private hotelKnowledge: KnowledgeRecord[];
@@ -33,10 +43,11 @@ export class KnowledgeRetriever {
       return [];
     }
 
-    const queryLanguage = detectLanguage(query);
     const queryTokens = tokenizeAndNormalize(query);
+    const significantQueryTokens = queryTokens.filter((t) => !STOP_WORDS.has(t));
+    const tokensToUse = significantQueryTokens.length > 0 ? significantQueryTokens : queryTokens;
 
-    if (queryTokens.length === 0) {
+    if (tokensToUse.length === 0) {
       return [];
     }
 
@@ -51,12 +62,12 @@ export class KnowledgeRetriever {
     const scoredResults: RetrievalResult[] = [];
 
     for (const record of candidateRecords) {
-      const matchDetails = this.scoreRecord(query, queryTokens, record);
+      const matchDetails = this.scoreRecord(query, tokensToUse, record);
       if (matchDetails.score >= threshold) {
         let confidence: "high" | "medium" | "low" = "low";
-        if (matchDetails.score >= 0.65) {
+        if (matchDetails.score >= 0.60) {
           confidence = "high";
-        } else if (matchDetails.score >= 0.40) {
+        } else if (matchDetails.score >= 0.38) {
           confidence = "medium";
         }
 
@@ -82,78 +93,74 @@ export class KnowledgeRetriever {
    */
   private scoreRecord(
     rawQuery: string,
-    queryTokens: string[],
+    significantTokens: string[],
     record: KnowledgeRecord | AttractionRecord
   ): { score: number; matchedKeywords: string[] } {
     let score = 0;
     const matchedKeywords: string[] = [];
 
-    const isHotel = "title" in record;
-    const title = isHotel ? (record as KnowledgeRecord).title : (record as AttractionRecord).name;
-    const content = isHotel ? (record as KnowledgeRecord).content : (record as AttractionRecord).description;
+    const isHotel = isKnowledgeRecord(record);
+    const title = isHotel ? record.title : record.name;
+    const content = isHotel ? record.content : record.description;
     const keywords = record.keywords || [];
 
-    const titleTokens = tokenizeAndNormalize(title);
-    const contentTokens = tokenizeAndNormalize(content);
+    const titleTokens = tokenizeAndNormalize(title).filter((t) => !STOP_WORDS.has(t));
+    const contentTokens = tokenizeAndNormalize(content).filter((t) => !STOP_WORDS.has(t));
+    const normalizedQuery = rawQuery.toLowerCase();
 
-    // 1. Keyword direct matching (weighted heavily: up to 0.5)
+    // 1. Keyword phrase & token matching (accumulated, up to 0.65)
+    let keywordHits = 0;
     for (const kw of keywords) {
-      const kwTokens = tokenizeAndNormalize(kw);
-      if (kwTokens.length === 0) continue;
+      const kwLower = kw.toLowerCase();
 
-      // Check if raw query contains the keyword phrase directly
-      const normalizedQuery = rawQuery.toLowerCase();
-      if (normalizedQuery.includes(kw.toLowerCase())) {
-        score += 0.45;
+      // Direct substring match
+      if (normalizedQuery.includes(kwLower)) {
+        keywordHits += 1.5;
         matchedKeywords.push(kw);
-        break; // Count once per record
+        continue;
       }
 
-      // Check token overlap with keyword
-      const tokenOverlap = queryTokens.filter((qt) => kwTokens.includes(qt));
-      if (tokenOverlap.length > 0) {
-        const overlapRatio = tokenOverlap.length / kwTokens.length;
-        score += overlapRatio * 0.35;
-        matchedKeywords.push(...tokenOverlap);
+      // Keyword token overlap
+      const kwTokens = tokenizeAndNormalize(kw).filter((t) => !STOP_WORDS.has(t));
+      if (kwTokens.length > 0) {
+        const tokenOverlap = significantTokens.filter((st) => kwTokens.includes(st));
+        if (tokenOverlap.length > 0) {
+          keywordHits += tokenOverlap.length / kwTokens.length;
+          matchedKeywords.push(...tokenOverlap);
+        }
       }
+    }
+
+    if (keywordHits > 0) {
+      score += Math.min(0.65, keywordHits * 0.30);
     }
 
     // 2. Title / Name token matching (up to 0.35)
-    const titleMatches = queryTokens.filter((qt) => titleTokens.includes(qt));
+    const titleMatches = significantTokens.filter((st) => titleTokens.includes(st));
     if (titleMatches.length > 0) {
-      score += (titleMatches.length / queryTokens.length) * 0.35;
+      score += (titleMatches.length / significantTokens.length) * 0.35;
     }
 
-    // 3. Content token overlap (up to 0.20)
-    const contentMatches = queryTokens.filter((qt) => contentTokens.includes(qt));
+    // 3. Content token overlap (up to 0.15)
+    const contentMatches = significantTokens.filter((st) => contentTokens.includes(st));
     if (contentMatches.length > 0) {
-      score += Math.min(0.20, (contentMatches.length / queryTokens.length) * 0.20);
+      score += Math.min(0.15, (contentMatches.length / significantTokens.length) * 0.15);
     }
 
-    // Cap score at 1.0
     return {
       score: Math.min(1.0, score),
       matchedKeywords: Array.from(new Set(matchedKeywords)),
     };
   }
 
-  /**
-   * Retrieve all verified attractions on a specific bank (East Bank vs West Bank).
-   */
   public getAttractionsByBank(bank: "West Bank" | "East Bank"): AttractionRecord[] {
     return this.attractions.filter((a) => a.bank === bank || a.bank.includes(bank));
   }
 
-  /**
-   * Get attraction by unique ID.
-   */
   public getAttractionById(id: string): AttractionRecord | undefined {
     return this.attractions.find((a) => a.id === id);
   }
 
-  /**
-   * Get hotel knowledge record by ID.
-   */
   public getHotelRecordById(id: string): KnowledgeRecord | undefined {
     return this.hotelKnowledge.find((k) => k.id === id);
   }

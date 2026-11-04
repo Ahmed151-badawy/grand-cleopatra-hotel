@@ -4,6 +4,7 @@ import {
   CompletionOptions,
   CompletionResult,
   ProviderHealth,
+  isKnowledgeRecord,
 } from "../types";
 import { detectLanguage } from "../retrieval/multilingual-normalizer";
 import { defaultKnowledgeRetriever } from "../retrieval/knowledge-retriever";
@@ -41,27 +42,50 @@ export class FallbackProvider implements AIProvider {
 
     if (retrieved.length > 0 && retrieved[0] && retrieved[0].score >= 0.28) {
       const topRecord = retrieved[0].record;
-      const content =
-        "content" in topRecord
-          ? topRecord.content
-          : `${topRecord.name}: ${topRecord.description} (${topRecord.bank}, approx. ${topRecord.travelTimeFromHotel}). Tips: ${topRecord.practicalTips}`;
+      const isOwnerConfRequired =
+        topRecord.ownerConfirmationRequired ||
+        topRecord.verificationStatus === "owner_confirmation_required";
+      const isUnverified = topRecord.verificationStatus === "unverified";
+
+      let statusNotice = "";
+      if (isOwnerConfRequired) {
+        statusNotice =
+          lang === "ar"
+            ? "⚠️ ملاحظة: هذه التفاصيل تتطلب تأكيداً مسبقاً من إدارة الفندق.\n\n"
+            : lang === "de"
+            ? "⚠️ Hinweis: Diese Information erfordert eine Bestätigung durch das Hotelmanagement.\n\n"
+            : lang === "fr"
+            ? "⚠️ Remarque: Cette information nécessite une confirmation préalable de la direction de l'hôtel.\n\n"
+            : lang === "es"
+            ? "⚠️ Nota: Esta información requiere confirmación previa de la administración del hotel.\n\n"
+            : "⚠️ Note: This specific policy or pricing requires explicit confirmation by hotel management.\n\n";
+      } else if (isUnverified) {
+        statusNotice =
+          lang === "ar"
+            ? "⚠️ تنبيه: هذه المعلومة غير مؤكدة رسمياً حتى الآن ولا يمكن اعتمادها كحقيقة نهائية.\n\n"
+            : "⚠️ Notice: This information is unverified and cannot be treated as a confirmed hotel fact without owner verification.\n\n";
+      }
+
+      const content = isKnowledgeRecord(topRecord)
+        ? topRecord.content
+        : `${topRecord.name}: ${topRecord.description} (${topRecord.bank}, approx. ${topRecord.travelTimeFromHotel}). Tips: ${topRecord.practicalTips}`;
 
       // Format grounded response by language
       switch (lang) {
         case "ar":
-          responseText = `أهلاً بك في فندق جراند كليوباترا بالأقصر. بناءً على معلوماتنا المعتمدة:\n\n${content}\n\nإذا كنت ترغب في الاستفسار عن تفاصيل إضافية أو تأكيد الحجز، يُرجى التواصل مباشرةً مع الاستقبال عبر واتساب: +20 100 345 6789.`;
+          responseText = `أهلاً بك في فندق جراند كليوباترا بالأقصر. بناءً على سجلاتنا المعتمدة:\n\n${statusNotice}${content}\n\nإذا كنت ترغب في الاستفسار عن تفاصيل إضافية أو تأكيد الحجز، يُرجى التواصل مباشرةً مع الاستقبال عبر واتساب: +20 100 345 6789.`;
           break;
         case "de":
-          responseText = `Willkommen im Grand Cleopatra Hotel in Luxor. Basierend auf unseren verifizierten Hotelinformationen:\n\n${content}\n\nFür weitere Fragen oder Buchungsbestätigungen kontaktieren Sie bitte unsere 24/7 Rezeption per WhatsApp: +20 100 345 6789.`;
+          responseText = `Willkommen im Grand Cleopatra Hotel in Luxor. Basierend auf unseren verifizierten Hotelinformationen:\n\n${statusNotice}${content}\n\nFür weitere Fragen oder Buchungsbestätigungen kontaktieren Sie bitte unsere 24/7 Rezeption per WhatsApp: +20 100 345 6789.`;
           break;
         case "fr":
-          responseText = `Bienvenue au Grand Cleopatra Hotel à Louxor. D'après nos informations officielles vérifiées:\n\n${content}\n\nPour confirmer une disponibilité ou pour toute demande personnalisée, contactez notre réception 24/7 sur WhatsApp: +20 100 345 6789.`;
+          responseText = `Bienvenue au Grand Cleopatra Hotel à Louxor. D'après nos informations officielles vérifiées:\n\n${statusNotice}${content}\n\nPour confirmer une disponibilité ou pour toute demande personnalisée, contactez notre réception 24/7 sur WhatsApp: +20 100 345 6789.`;
           break;
         case "es":
-          responseText = `Bienvenido al Grand Cleopatra Hotel en Lúxor. De acuerdo con nuestra información verificada:\n\n${content}\n\nPara consultar disponibilidad o realizar solicitudes especiales, comuníquese con nuestra recepción 24/7 por WhatsApp: +20 100 345 6789.`;
+          responseText = `Bienvenido al Grand Cleopatra Hotel en Lúxor. De acuerdo con nuestra información verificada:\n\n${statusNotice}${content}\n\nPara consultar disponibilidad o realizar solicitudes especiales, comuníquese con nuestra recepción 24/7 por WhatsApp: +20 100 345 6789.`;
           break;
         default:
-          responseText = `Welcome to Grand Cleopatra Hotel, Luxor. Based on our verified records:\n\n${content}\n\nFor real-time availability, customized excursions, or direct inquiries, please reach out to our 24/7 front desk team on WhatsApp: +20 100 345 6789.`;
+          responseText = `Welcome to Grand Cleopatra Hotel, Luxor. Based on our verified records:\n\n${statusNotice}${content}\n\nFor real-time availability, customized excursions, or direct inquiries, please reach out to our 24/7 front desk team on WhatsApp: +20 100 345 6789.`;
       }
     } else {
       // Unverified or unknown information fallback with WhatsApp handoff

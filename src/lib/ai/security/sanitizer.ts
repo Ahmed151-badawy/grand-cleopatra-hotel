@@ -34,3 +34,4 @@ export function sanitizeUserInput(input: unknown): string {
 
   return clean;
 }
+

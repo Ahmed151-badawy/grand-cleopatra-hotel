@@ -52,3 +52,4 @@ export function detectPromptInjection(input: string): InjectionCheckResult {
 
   return { isInjection: false };
 }
+

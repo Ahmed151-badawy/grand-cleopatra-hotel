@@ -65,3 +65,4 @@ export const ItineraryResponseSchema = z.object({
 });
 
 export type ItineraryResponse = z.infer<typeof ItineraryResponseSchema>;
+

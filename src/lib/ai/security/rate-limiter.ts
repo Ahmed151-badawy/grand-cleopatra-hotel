@@ -54,3 +54,4 @@ export async function checkRateLimit(
 ) {
   return globalStore.consume(identifier, limit, windowMs);
 }
+
